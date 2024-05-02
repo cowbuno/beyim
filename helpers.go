@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 )
@@ -104,7 +105,7 @@ func formatedName(key string) string {
 	if index == -1 {
 		return key
 	}
-	return key[:index]
+	return key[index+1:]
 
 }
 
@@ -116,4 +117,22 @@ func getIndex(text string, char rune) int {
 	}
 	return -1
 
+}
+
+func ErrorToStr(value interface{}) string {
+	val := reflect.ValueOf(value)
+
+	if !val.IsValid() {
+		return "nil"
+	}
+
+	if val.Kind() == reflect.Ptr && !val.IsNil() {
+		val = val.Elem()
+	}
+
+	if err, ok := val.Interface().(error); ok {
+		return err.Error()
+	}
+	str := fmt.Sprintf("%v", val)[1:]
+	return str[:len(str)-1]
 }
