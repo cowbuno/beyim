@@ -39,6 +39,8 @@ func Filter(Struct interface{}) {
 	}
 }
 
+
+
 func contains(arr []string, item string) bool {
 	for _, s := range arr {
 		if s == item {

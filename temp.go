@@ -9,3 +9,7 @@ type Request struct {
 type Person struct {
 	Id int
 }
+
+type Class struct {
+	requests []Request
+}

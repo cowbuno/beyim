@@ -6,6 +6,19 @@ import (
 	"strings"
 )
 
+func isSlice(v interface{}) bool {
+
+	val := reflect.ValueOf(v)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	if val.Kind() == reflect.Slice || val.Kind() == reflect.Array {
+		return true
+	}
+	return false
+}
 func isStruct(v interface{}) bool {
 	val := reflect.ValueOf(v)
 

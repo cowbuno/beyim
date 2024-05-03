@@ -93,12 +93,18 @@ func main() {
 
 	json.Unmarshal([]byte(payload), &data)
 	url := "urlPt"
+	req1 := Request{SomeString: "123345678912345678912345678143356", URL: &url, Index: 1}
+	req2 := Request{SomeString: "123345678912345678912345678143356754654632141324", URL: &url, Index: 2}
+	req3 := Request{SomeString: "shortstring", URL: &url, Index: 3}
+
+	dataSet := []Request{req1, req2, req3}
 	req := Request{SomeString: "123345678912345678912345678143356754654632141324", URL: &url, Index: 1}
+
 	AddFilter(&req, &req.SomeString)
 	logPrint(
 		"Method", "get",
 		"payload1:request", req,
-		// "payload2:dataset", data,
+		"payload2:dataset", dataSet,
 		"result1:result", Person{Id: 1},
 		"result2:data", &[]int{1, 2, 3, 4, 5},
 		"result3:err", errors.New("bad"),
@@ -107,8 +113,6 @@ func main() {
 }
 
 func logPrint(keyval ...any) {
-	startTime := time.Now()
-
 	logMessages := map[string]interface{}{}
 	var keys = make([]string, 0, len(keyval)/2+2)
 	var key string
@@ -149,25 +153,25 @@ func logPrint(keyval ...any) {
 		} else if isPayload(k) {
 			if isStruct(logMessages[k]) {
 				logMessages[k] = Filter(logMessages[k])
+			} else if isSlice(logMessages[k]) {
+				logMessages[k] = FilterArray(logMessages[k])
 			}
 			payload[formatedKey] = logMessages[k]
 		} else {
 			otherFields[formatedKey] = logMessages[k]
 		}
 	}
-	fmt.Println("=============")
 
-	logRequest(method, payload, startTime, result, err)
+	logRequest(method, payload, result, err)
 }
 
-func logRequest(method string, payload interface{}, startTime time.Time, result interface{}, err error) {
+func logRequest(method string, payload interface{}, result interface{}, err error) {
 	// duration := time.Since(startTime)
 	logger.WithFields(logrus.Fields{
-		"timestamp":  time.Now().Format(time.RFC3339),
-		"level":      getLoggerLevel(err),
-		"method":     method,
-		"payload":    payload,
-		"request_at": startTime.Format(time.RFC3339),
+		"timestamp": time.Now().Format(time.RFC3339),
+		"level":     getLoggerLevel(err),
+		"method":    method,
+		"payload":   payload,
 		// "duration_time": duration.String(),
 		"result": result,
 		"error":  formatError(err),

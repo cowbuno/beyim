@@ -35,12 +35,7 @@ func Filter(Struct interface{}) interface{} {
 						newField.Set(field)
 					}
 				case reflect.Slice, reflect.Array:
-					if field.Len() > 3 {
-						newSlice := field.Slice(0, 3)
-						newField.Set(newSlice)
-					} else {
-						newField.Set(field)
-					}
+					FilterArray(field)
 				default:
 					newField.Set(field)
 				}
@@ -53,6 +48,29 @@ func Filter(Struct interface{}) interface{} {
 	}
 
 	return newInstance.Interface()
+}
+
+func FilterArray(arr interface{}) interface{} {
+	sliceVal := reflect.ValueOf(arr)
+	if sliceVal.Kind() != reflect.Slice {
+		fmt.Println("FilterArray: provided data is not a slice")
+		return nil
+	}
+
+	resultSlice := reflect.MakeSlice(sliceVal.Type(), 0, sliceVal.Len())
+
+	for i := 0; i < sliceVal.Len(); i++ {
+		element := sliceVal.Index(i)
+		if !element.CanAddr() {
+			newElem := reflect.New(element.Type()).Elem()
+			newElem.Set(element)
+			element = newElem.Addr()
+		}
+		filtered := Filter(element.Interface())
+		resultSlice = reflect.Append(resultSlice, reflect.ValueOf(filtered))
+	}
+
+	return resultSlice.Interface()
 }
 
 func contains(arr []string, item string) bool {
