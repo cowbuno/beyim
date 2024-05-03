@@ -5,3 +5,7 @@ type Request struct {
 	URL        *string
 	Index      int
 }
+
+type Person struct {
+	Id int
+}

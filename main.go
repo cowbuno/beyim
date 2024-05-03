@@ -93,11 +93,13 @@ func main() {
 
 	json.Unmarshal([]byte(payload), &data)
 	url := "urlPt"
+	req := Request{SomeString: "123345678912345678912345678143356754654632141324", URL: &url, Index: 1}
+	AddFilter(&req, &req.SomeString)
 	logPrint(
 		"Method", "get",
-		"payload1:request", &Request{SomeString: "someData", URL: &url, Index: 1},
-		"payload2:dataset", data,
-		"result1:result", "person",
+		"payload1:request", req,
+		// "payload2:dataset", data,
+		"result1:result", Person{Id: 1},
 		"result2:data", &[]int{1, 2, 3, 4, 5},
 		"result3:err", errors.New("bad"),
 	)
@@ -105,7 +107,7 @@ func main() {
 }
 
 func logPrint(keyval ...any) {
-	// startTime := time.Now()
+	startTime := time.Now()
 
 	logMessages := map[string]interface{}{}
 	var keys = make([]string, 0, len(keyval)/2+2)
@@ -145,34 +147,30 @@ func logPrint(keyval ...any) {
 			}
 
 		} else if isPayload(k) {
+			if isStruct(logMessages[k]) {
+				logMessages[k] = Filter(logMessages[k])
+			}
 			payload[formatedKey] = logMessages[k]
 		} else {
 			otherFields[formatedKey] = logMessages[k]
 		}
 	}
-	// payload = trimMapString(payload)
-	fmt.Println(otherFields, result)
-	fmt.Println("=========")
-	fmt.Println(payload)
-	fmt.Println("=========")
-	fmt.Println(result)
-	fmt.Println("=========")
-	fmt.Println(err, method)
+	fmt.Println("=============")
 
-	// logRequest(method, payload, startTime, result, err)
+	logRequest(method, payload, startTime, result, err)
 }
 
 func logRequest(method string, payload interface{}, startTime time.Time, result interface{}, err error) {
-	duration := time.Since(startTime)
+	// duration := time.Since(startTime)
 	logger.WithFields(logrus.Fields{
-		"timestamp":     time.Now().Format(time.RFC3339),
-		"level":         getLoggerLevel(err),
-		"method":        method,
-		"payload":       payload,
-		"request_at":    startTime.Format(time.RFC3339),
-		"duration_time": duration.String(),
-		"result":        result,
-		"error":         formatError(err),
+		"timestamp":  time.Now().Format(time.RFC3339),
+		"level":      getLoggerLevel(err),
+		"method":     method,
+		"payload":    payload,
+		"request_at": startTime.Format(time.RFC3339),
+		// "duration_time": duration.String(),
+		"result": result,
+		"error":  formatError(err),
 	}).Info("Processed request")
 }
 
@@ -193,24 +191,24 @@ func formatError(err error) interface{} {
 	return nil
 }
 
-func extractTextFromJSON(jsonStr string) (string, error) {
-	var data struct {
-		Root struct {
-			Children []struct {
-				Children []struct {
-					Text string `json:"text"`
-				} `json:"children"`
-			} `json:"children"`
-		} `json:"root"`
-	}
+// func extractTextFromJSON(jsonStr string) (string, error) {
+// 	var data struct {
+// 		Root struct {
+// 			Children []struct {
+// 				Children []struct {
+// 					Text string `json:"text"`
+// 				} `json:"children"`
+// 			} `json:"children"`
+// 		} `json:"root"`
+// 	}
 
-	err := json.Unmarshal([]byte(jsonStr), &data)
-	if err != nil {
-		return "", err
-	}
+// 	err := json.Unmarshal([]byte(jsonStr), &data)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	if len(data.Root.Children) > 0 && len(data.Root.Children[0].Children) > 0 {
-		return data.Root.Children[0].Children[0].Text, nil
-	}
-	return "", fmt.Errorf("no text found")
-}
+// 	if len(data.Root.Children) > 0 && len(data.Root.Children[0].Children) > 0 {
+// 		return data.Root.Children[0].Children[0].Text, nil
+// 	}
+// 	return "", fmt.Errorf("no text found")
+// }
